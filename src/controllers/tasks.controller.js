@@ -98,6 +98,41 @@ const loginUser = async (req, res, next) => {
     console.log('Correo:', correo);
     console.log('Contraseña:', contrasena);
 
+  }
+  const signupUser = async (req, res, next) => {
+    const { nombre, apellido, correo, contrasena } = req.body;
+  
+    if (!nombre || !apellido || !correo || !contrasena) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    }
+  
+    try {
+      const emailCheck = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(409).json({ message: 'El correo ya está registrado' });
+      }
+  
+      // Insertar el nuevo usuario con rol 'cliente'
+      const result = await pool.query(
+        'INSERT INTO usuarios (nombre, apellido, correo, contrasena, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [nombre, apellido, correo, contrasena, 'cliente'] // Se incluye el rol 'cliente'
+      );
+  
+      const newUser = result.rows[0];
+      res.status(201).json({
+        message: 'Registro exitoso',
+        user: {
+          id: newUser.id,
+          nombre: newUser.nombre,
+          apellido: newUser.apellido,
+          correo: newUser.correo,
+          rol: newUser.rol, // Devolver también el rol
+        },
+      });
+    } catch (error) {
+      console.error('Error en registro:', error);
+      next(error);
+    }
   };
 module.exports = {
     getAllTask,
@@ -105,5 +140,6 @@ module.exports = {
     createTask,
     deleteTask,
     updateTask,
-    loginUser
+    loginUser,
+    signupUser
 }

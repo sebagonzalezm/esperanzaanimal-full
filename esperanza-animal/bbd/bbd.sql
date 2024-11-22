@@ -5,6 +5,7 @@ CREATE TABLE Usuarios (
     contraseña VARCHAR(255) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL
+    rol VARCHAR(100) NOT NULL
 );
 
 -- Crear la tabla Productos

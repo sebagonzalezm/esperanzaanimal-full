@@ -123,19 +123,48 @@ export function IniciarSesion() {
   );
 }
 export function SignUp() {
-  const classes = useStyles();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const nombre = data.get('firstName');
+    const apellido = data.get('lastName');
+    const correo = data.get('email');
+    const contrasena = data.get('password');
+
+    try {
+      const response = await axios.post('http://localhost:4000/signup', {
+        nombre,
+        apellido,
+        correo,
+        contrasena,
+      });
+
+      console.log('Respuesta del backend:', response.data);
+      if (response.data.message === 'Registro exitoso') {
+        navigate('/');
+      } else {
+        setError(response.data.message || 'Error al registrarse');
+      }
+    } catch (error) {
+      console.error('Error en registro:', error.response || error);
+      setError(error.response?.data?.message || 'Hubo un problema con el registro');
+    }
+  };
+
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
-      <div className={classes.paper}>
-        <Avatar className={classes.avatar}>
+      <div>
+        <Avatar>
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Bienvenidos a The Big Boxx
+          Registrarse
         </Typography>
-        <form className={classes.form} noValidate>
+        <form onSubmit={handleSubmit} noValidate>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -184,14 +213,13 @@ export function SignUp() {
               />
             </Grid>
           </Grid>
+          {error && <Typography color="error">{error}</Typography>}
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
-            className={classes.submit}
             style={{ marginTop: '20px' }}
-            onClick={() => navigate('/proxtorneos')}
           >
             Registrar
           </Button>
@@ -204,12 +232,10 @@ export function SignUp() {
           </Grid>
         </form>
       </div>
-      <Box mt={5}>
-        <Copyright />
-      </Box>
     </Container>
   );
 }
+
 const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(8),
